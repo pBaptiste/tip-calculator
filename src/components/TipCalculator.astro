@@ -1,0 +1,193 @@
+---
+import { Image } from "astro:assets";
+import dollarIcon from '../images/icon-dollar.svg'
+import personIcon from '../images/icon-person.svg'
+---
+
+<form class="bg-white rounded-t-[25px] shadow-calculator w-full max-w-[920px] p-8 lg:pl-12 font-bold flex flex-col md:flex-row md:items-center md:mx-auto md:rounded-[25px] gap-8 lg:gap-12">
+        <div>
+            <!-- Bills -->
+            <div class="mb-8 lg:mb-10">
+                <div class="flex justify-between items-center">
+                    <label for="bill" class="text-secondary text-base">Bill</label>
+                    <p id="bill-error" class="hidden text-error text-base">Must be a number</p>
+                </div>
+                
+                <div class="mt-2 flex justify-between items-center rounded-[5px] bg-background py-[6px] pl-[19.26px] pr-[17.48px] min-h-12 hover:border-[2px] hover:cursor-pointer hover:border-accent">
+                    <Image src={dollarIcon} alt='' width={9.84} height={15.456}/>
+                    <input type="text" name="bill" id="bill" class="text-primary placeholder:text-primary bg-transparent w-2/3 text-2xl text-right placeholder:opacity-35 outline-none" placeholder="0">
+                </div>
+            </div>
+
+            <!-- Tips  -->
+            <div class="mb-10">
+                <label for="" class="text-secondary text-base">Select Tip %</label>
+                <div class="mt-4 grid grid-cols-2 lg:grid-cols-3 gap-x-[16.56px] lg:gap-x-[14px] gap-y-4">
+                    <button type="button" class="bg-primary hover:bg-accent-2 focus:bg-accent-2 text-white hover:text-primary focus:text-primary transition-colors duration-300 rounded-[5px] text-2xl py-[6px] w-full min-h-12 outline-none">5%</button>
+                    <button type="button" class="bg-primary hover:bg-accent-2 focus:bg-accent-2 text-white hover:text-primary focus:text-primary transition-colors duration-300 rounded-[5px] text-2xl py-[6px] w-full min-h-12 outline-none">10%</button>
+                    <button type="button" class="bg-primary hover:bg-accent-2 focus:bg-accent-2 text-white hover:text-primary focus:text-primary transition-colors duration-300 rounded-[5px] text-2xl py-[6px] w-full min-h-12 outline-none">15%</button>
+                    <button type="button" class="bg-primary hover:bg-accent-2 focus:bg-accent-2 text-white hover:text-primary focus:text-primary transition-colors duration-300 rounded-[5px] text-2xl py-[6px] w-full min-h-12 outline-none">25%</button>
+                    <button type="button" class="bg-primary hover:bg-accent-2 focus:bg-accent-2 text-white hover:text-primary focus:text-primary transition-colors duration-300 rounded-[5px] text-2xl py-[6px] w-full min-h-12 outline-none">50%</button>
+                    <input type="text" name="custom" id="custom" placeholder="Custom" class="text-primary placeholder:text-primary bg-background rounded-[5px] text-2xl text-right pl-[19px] md:pl-2 pr-[17.33px] hover:border-[2px] focus:border-[2px] outline-none hover:border-accent focus:border-accent caret-accent">
+                </div>
+            </div>
+
+            <!-- People -->
+            <div>
+                <div class="flex justify-between items-center">
+                    <label for="people" class="text-secondary text-base">Number of People</label>
+                    <p id="none-zero-error" class="hidden text-error text-xs">Can’t be zero & must be whole</p>
+                </div>
+                <div class="mt-2 flex justify-between items-center rounded-[5px] bg-background py-[6px] pl-[19.26px] pr-[17.48px] min-h-12 hover:border-[2px] hover:cursor-pointer hover:border-accent">
+                    <Image src={personIcon} alt=''/>
+                    <input type="text" name="people" id="people" placeholder="0" class=" text-primary placeholder:text-primary bg-transparent w-2/3 text-2xl text-right placeholder:opacity-35 outline-none">
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-[15px] bg-primary pt-[39px] lg:p-10 pl-6 pr-[22px] pb-6 md:min-w-[413px]">
+            <div class="flex justify-between items-center mb-[21px] lg:mb-[53px]">
+                <p class="text-white font-bold text-base">Tip Amount<span class="block text-muted text-[0.813rem]">/ person</span></p>
+                <p id="tip-amount" class="text-accent text-[2rem] lg:text-5xl text-right tracking-[-0.667px]">$0.00</p>
+            </div>
+
+            <div class="flex justify-between items-center mb-[33px] md:mb-[140px]">
+                <p class="text-white font-bold text-base">Total<span class="block text-muted text-[0.813rem]">/ person</span></p>
+                <p id="total" class="text-accent text-[2rem] lg:text-5xl text-right tracking-[-0.667px]">$0.00</p>
+            </div>
+
+            <button id="reset" type="button" class="bg-accent text-primary rounded-[5px] w-full min-h-12 py-[9px] text-xl uppercase opacity-35 hover:cursor-not-allowed" disabled>Reset</button>
+        </div>
+
+</form>
+
+<style>
+.active {
+    background-color: #26C2AE;
+    color: #00474B;
+}
+
+.inabled {
+    opacity: 100;
+    cursor: pointer;
+}
+</style>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        // DOM Elements
+        const bill = document.getElementById('bill') as HTMLInputElement;
+        const people = document.getElementById('people') as HTMLInputElement;
+        const tipPercentages = document.querySelectorAll('button');
+        const customTip = document.getElementById('custom') as HTMLInputElement;
+        const tipAmount = document.getElementById('tip-amount') as HTMLElement;
+        const total = document.getElementById('total') as HTMLElement;
+        const reset = document.getElementById('reset') as HTMLButtonElement;
+
+        // State
+        let currentBill = 0
+        let currentTip = 0;
+        let currentNumberOfPeople = 0;
+        let tipPerPerson = 0;
+        let totalPerPerson = 0;
+
+        //BILL INPUT FIELD
+        bill.addEventListener('input', (event: Event) => {
+            const inputValue = (event.target as HTMLInputElement)?.value;
+           
+            const isNumber = /^[0-9]+(\.[0-9]+)?$/.test(inputValue);
+
+            const parent = bill.parentElement as HTMLElement
+            
+            if(!isNumber || inputValue === '') {
+                document.getElementById('bill-error')?.classList.remove('hidden');
+                parent.style.borderColor = '#E17052';
+            } else {
+                document.getElementById('bill-error')?.classList.add('hidden');
+                parent.style.borderColor = '#26C2AE';
+                currentBill = parseFloat(inputValue);
+            }
+        })
+
+        //PRESET TIP PERCENTAGES
+        tipPercentages.forEach(tipPercentage => {
+            tipPercentage.addEventListener('click', () => {
+                tipPercentages.forEach(item => {item.classList.remove('active')});
+
+                tipPercentage.classList.add('active');
+
+                const tip = (tipPercentage.textContent)?.replace('%', '') as string;
+
+                const decimalConversion = parseFloat(tip) / 100;
+
+                currentTip = decimalConversion;
+            })
+        })
+
+        //CUSTOM TIP PERCENTAGE
+        customTip.addEventListener('input', (event: Event) => {
+            tipPercentages.forEach(item => {item.classList.remove('active')});
+
+            const inputValue = (event.target as HTMLInputElement)?.value;
+             
+            const parsedValue = parseFloat(inputValue);
+           
+            const isNumber = /^[0-9]+(\.[0-9]+)?$/.test(inputValue);
+            
+
+            if(!isNumber && inputValue != ''){
+                customTip.style.borderColor = '#E17052';
+            } else {
+                customTip.style.borderColor = '#26C2AE';
+                currentTip = parsedValue / 100;
+            }
+        })
+
+        function calculateTotalPerPerson(bill: number, people: number, tip: number) {
+            return (bill/people) + tip;
+        }
+
+        function calculateTipPerPerson(bill: number, tip: number, people: number) {
+            return (bill/people) * tip;
+        }
+
+        //AMOUNT OF PEOPLE
+        people.addEventListener('input', (event: Event) => {
+            const inputValue = (event.target as HTMLInputElement)?.value;
+
+            const parsedValue = Math.round(parseFloat(inputValue))
+           
+            const isNumber = /^[0-9]+$/.test(inputValue);
+
+            const isMultipleZeros = /^0+$/.test(inputValue);
+
+            const parent = people.parentElement as HTMLElement;
+
+            if(!isNumber || inputValue === '0' || isMultipleZeros){
+                parent.style.borderColor = '#E17052';
+                document.getElementById('none-zero-error')?.classList.remove('hidden');
+            } else {
+                parent.style.borderColor = '#26C2AE';
+                document.getElementById('none-zero-error')?.classList.add('hidden');
+                currentNumberOfPeople = parsedValue;
+                tipPerPerson = calculateTipPerPerson(currentBill, currentTip, currentNumberOfPeople);
+                totalPerPerson = calculateTotalPerPerson(currentBill, currentNumberOfPeople, tipPerPerson)
+                tipAmount.textContent = `$${tipPerPerson.toFixed(2)}`
+                total.textContent = `$${totalPerPerson.toFixed(2)}`
+                reset.removeAttribute('disabled');
+                reset.classList.add('inabled')
+            }
+        })
+
+        reset.addEventListener('click', () => {
+            bill.value = '';
+            tipPercentages.forEach(item => {item.classList.remove('active')})
+            customTip.value = '';
+            people.value = '';
+            tipAmount.textContent = '$0.00';
+            total.textContent = '$0.00';
+            reset.setAttribute('disabled', 'true');
+            reset.classList.remove('inabled')
+        })
+    })
+</script>
